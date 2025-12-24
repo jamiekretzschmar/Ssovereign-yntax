@@ -4,7 +4,7 @@ import { Strategy } from '../types';
 
 interface StrategyPhaseProps {
   strategies: Strategy[];
-  onGenerate: (selectedIds: string[]) => void;
+  onProceed: (selectedIds: string[]) => void;
   onSave: (selectedIds: string[], name?: string) => void;
   isLoading: boolean;
   error: string | null;
@@ -16,9 +16,8 @@ const ResearchTerminal: React.FC = () => {
   const messages = [
     "Exploring Tree-of-Thought branches...",
     "Validating Semantic-to-Acoustic mappings...",
-    "Applying Material 3 & Fluent Persona synthesis...",
+    "Applying Zero-Failure logic synthesis...",
     "Simulating Adversarial Edge-Cases...",
-    "Harmonizing cross-platform API logic...",
     "Finalizing Architectural Blueprint...",
   ];
   const [msgIdx, setMsgIdx] = useState(0);
@@ -34,7 +33,7 @@ const ResearchTerminal: React.FC = () => {
     <div className="bg-onyx/90 backdrop-blur-md sketch-border p-6 font-mono text-[11px] text-accent/80 space-y-3 shadow-2xl">
       <div className="flex items-center gap-3">
         <span className="w-3 h-3 bg-accent rounded-full animate-pulse"></span>
-        <span className="uppercase font-sketch font-bold tracking-[0.2em] text-accent">Research Terminal</span>
+        <span className="uppercase font-sketch font-bold tracking-[0.2em] text-accent">Strategic Terminal</span>
       </div>
       <div className="overflow-hidden h-5">
         <div key={msgIdx} className="animate-in slide-in-from-bottom-2 duration-500">
@@ -46,7 +45,7 @@ const ResearchTerminal: React.FC = () => {
 };
 
 export const StrategyPhase: React.FC<StrategyPhaseProps> = ({ 
-  strategies, onGenerate, onSave, isLoading, error, selectedIds, initialName 
+  strategies, onProceed, onSave, isLoading, error, selectedIds, initialName 
 }) => {
   const [internalSelected, setInternalSelected] = useState<string[]>(selectedIds);
   const [blueprintName, setBlueprintName] = useState(initialName || '');
@@ -65,7 +64,7 @@ export const StrategyPhase: React.FC<StrategyPhaseProps> = ({
     <div className="space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-700">
       <div className="space-y-3 text-left">
         <h2 className="text-5xl font-sketch font-bold text-blueprint dark:text-parchment tracking-tight">Architecture Design</h2>
-        <p className="text-blueprint/60 dark:text-accent/60 text-xl font-sketch">Select modular strategies to optimize the artifact reasoning.</p>
+        <p className="text-blueprint/60 dark:text-accent/60 text-xl font-sketch">Select design pillars to govern the Zero-Failure artifact logic.</p>
       </div>
 
       {isLoading && (
@@ -113,7 +112,7 @@ export const StrategyPhase: React.FC<StrategyPhaseProps> = ({
         <div className="relative">
           <input 
             type="text" 
-            placeholder="Name this blueprint alias (e.g. 'Project Phoenix V2')..." 
+            placeholder="Assign a vault alias (e.g. 'Project Phoenix V2')..." 
             className="w-full bg-white dark:bg-blueprint/20 sketch-border px-6 py-4 font-sketch text-lg text-forest dark:text-parchment focus:border-blueprint outline-none transition-all pr-14"
             value={blueprintName}
             onChange={(e) => setBlueprintName(e.target.value)}
@@ -129,11 +128,11 @@ export const StrategyPhase: React.FC<StrategyPhaseProps> = ({
             disabled={isLoading}
             className="flex-1 py-6 sketch-border font-sketch font-black text-lg bg-white dark:bg-blueprint/20 text-blueprint hover:bg-blueprint/5 transition-all flex items-center justify-center gap-4"
           >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" /></svg>
-            COMMIT VAULT
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7H5a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2" /></svg>
+            SAVE DRAFT
           </button>
           <button
-            onClick={() => onGenerate(internalSelected)}
+            onClick={() => onProceed(internalSelected)}
             disabled={isLoading || internalSelected.length === 0}
             className={`flex-[2] py-6 sketch-border font-sketch font-black text-xl transition-all flex items-center justify-center gap-4 sketch-shadow ${
               isLoading || internalSelected.length === 0 
@@ -144,7 +143,7 @@ export const StrategyPhase: React.FC<StrategyPhaseProps> = ({
             {isLoading ? (
               'RESEARCHING SYNTHESIS...'
             ) : (
-              `SYNTHESIZE (${internalSelected.length} ELEMENTS)`
+              `INITIATE AUDIT (${internalSelected.length} ELEMENTS)`
             )}
           </button>
         </div>

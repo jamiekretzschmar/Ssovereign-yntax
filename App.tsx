@@ -6,6 +6,8 @@ import { AppState, AppPhase, Strategy, SavedBlueprint, ToastMessage } from './ty
 import { InputPhase } from './components/InputPhase';
 import { StrategyPhase } from './components/StrategyPhase';
 import { ResultPhase } from './components/ResultPhase';
+import { AuditPhase } from './components/AuditPhase';
+import { TutorialPhase } from './components/TutorialPhase';
 import { IconLab } from './components/IconLab';
 import { Layout } from './components/Layout';
 import { Toast } from './components/Toast';
@@ -60,9 +62,17 @@ const App: React.FC = () => {
     }
   };
 
-  const handleGeneratePrompt = async (selectedIds: string[]) => {
-    const selected = state.strategies.filter(s => selectedIds.includes(s.id));
-    setState(prev => ({ ...prev, isLoading: true, selectedStrategyIds: selectedIds }));
+  const handleProceedToAudit = (selectedIds: string[]) => {
+    setState(prev => ({
+      ...prev,
+      selectedStrategyIds: selectedIds,
+      phase: AppPhase.AUDIT
+    }));
+  };
+
+  const handleGeneratePrompt = async () => {
+    setState(prev => ({ ...prev, isLoading: true }));
+    const selected = state.strategies.filter(s => state.selectedStrategyIds.includes(s.id));
     try {
       const finalPrompt = await geminiService.generateFinalPrompt(
         state.task, 
@@ -70,11 +80,10 @@ const App: React.FC = () => {
         state.repositoryName, 
         state.repositoryDescription
       );
-      // Auto-save the finalized architecture
       const updatedBlueprints = storageService.saveBlueprint(
         state.task, 
         state.strategies, 
-        selectedIds, 
+        state.selectedStrategyIds, 
         state.customName, 
         state.repositoryName, 
         state.repositoryDescription
@@ -155,8 +164,10 @@ const App: React.FC = () => {
 
   const handleBack = () => {
     if (state.phase === AppPhase.RESULT) {
+      setState(prev => ({ ...prev, phase: AppPhase.AUDIT }));
+    } else if (state.phase === AppPhase.AUDIT) {
       setState(prev => ({ ...prev, phase: AppPhase.STRATEGIES }));
-    } else if (state.phase === AppPhase.STRATEGIES || state.phase === AppPhase.ICON_LAB) {
+    } else if (state.phase === AppPhase.STRATEGIES || state.phase === AppPhase.ICON_LAB || state.phase === AppPhase.TUTORIAL) {
       setState(prev => ({ ...prev, phase: AppPhase.INPUT }));
     }
   };
@@ -169,6 +180,7 @@ const App: React.FC = () => {
       theme={state.theme}
       onToggleTheme={() => setState(s => ({ ...s, theme: s.theme === 'light' ? 'dark' : 'light' }))}
       onIconLab={() => setState(s => ({ ...s, phase: AppPhase.ICON_LAB }))}
+      onTutorial={() => setState(s => ({ ...s, phase: AppPhase.TUTORIAL }))}
     >
       {state.phase === AppPhase.INPUT && (
         <InputPhase 
@@ -185,12 +197,18 @@ const App: React.FC = () => {
       {state.phase === AppPhase.STRATEGIES && (
         <StrategyPhase 
           strategies={state.strategies} 
-          onGenerate={handleGeneratePrompt}
+          onProceed={handleProceedToAudit}
           onSave={handleSaveToVault}
           isLoading={state.isLoading}
           error={state.error}
           selectedIds={state.selectedStrategyIds}
           initialName={state.customName}
+        />
+      )}
+      {state.phase === AppPhase.AUDIT && (
+        <AuditPhase 
+          onComplete={handleGeneratePrompt}
+          isLoading={state.isLoading}
         />
       )}
       {state.phase === AppPhase.RESULT && (
@@ -205,6 +223,7 @@ const App: React.FC = () => {
         />
       )}
       {state.phase === AppPhase.ICON_LAB && <IconLab />}
+      {state.phase === AppPhase.TUTORIAL && <TutorialPhase />}
       
       <Toast messages={toasts} onRemove={removeToast} />
     </Layout>

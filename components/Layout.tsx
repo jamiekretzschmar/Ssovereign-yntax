@@ -11,6 +11,7 @@ interface LayoutProps {
   theme: 'light' | 'dark';
   onToggleTheme: () => void;
   onIconLab: () => void;
+  onTutorial: () => void;
 }
 
 const StepIndicator: React.FC<{ active: boolean; label: string; step: number; completed: boolean; onClick?: () => void }> = ({ active, label, step, completed, onClick }) => (
@@ -27,7 +28,7 @@ const StepIndicator: React.FC<{ active: boolean; label: string; step: number; co
     </div>
 );
 
-export const Layout: React.FC<LayoutProps> = ({ children, phase, onReset, onBack, theme, onToggleTheme, onIconLab }) => {
+export const Layout: React.FC<LayoutProps> = ({ children, phase, onReset, onBack, theme, onToggleTheme, onIconLab, onTutorial }) => {
   useEffect(() => {
     const handleKeydown = (e: KeyboardEvent) => {
       if (e.key === 'Escape' && onBack) onBack();
@@ -42,8 +43,8 @@ export const Layout: React.FC<LayoutProps> = ({ children, phase, onReset, onBack
         <div className="flex items-center gap-4 group cursor-pointer" onClick={onReset}>
           <Logo className="w-14 h-14 group-hover:rotate-6 transition-transform" />
           <div className="hidden sm:block">
-            <h1 className="text-2xl font-sketch font-bold tracking-tight text-blueprint dark:text-parchment foil-text uppercase">SOVEREIGN SYNTAX</h1>
-            <p className="text-[10px] text-blueprint/60 dark:text-accent/60 mt-0.5 uppercase tracking-[0.3em] font-black">SOVEREIGN RESEARCH ENGINE</p>
+            <h1 className="text-2xl font-sketch font-bold tracking-tight text-blueprint dark:text-parchment foil-text uppercase">THE PROMPT ARCHITECT</h1>
+            <p className="text-[10px] text-blueprint/60 dark:text-accent/60 mt-0.5 uppercase tracking-[0.3em] font-black">SOVEREIGN ARTIFACT ENGINE</p>
           </div>
         </div>
 
@@ -56,6 +57,7 @@ export const Layout: React.FC<LayoutProps> = ({ children, phase, onReset, onBack
                 )}
             </button>
             <div className="hidden lg:flex gap-6">
+                <button onClick={onTutorial} className={`text-[11px] font-sketch font-black uppercase tracking-widest transition-all ${phase === AppPhase.TUTORIAL ? 'text-blueprint underline underline-offset-4' : 'text-blueprint/40 hover:text-blueprint'}`}>Guides</button>
                 <button onClick={onIconLab} className={`text-[11px] font-sketch font-black uppercase tracking-widest transition-all ${phase === AppPhase.ICON_LAB ? 'text-blueprint underline underline-offset-4' : 'text-blueprint/40 hover:text-blueprint'}`}>Icon Lab</button>
                 {onBack && <button onClick={onBack} className="text-[11px] font-sketch font-black text-blueprint/40 hover:text-blueprint uppercase tracking-widest transition-all">Previous [ESC]</button>}
                 <button onClick={onReset} className="text-[11px] font-sketch font-black text-blueprint/40 hover:text-blueprint uppercase tracking-widest transition-all">Vault New</button>
@@ -64,19 +66,20 @@ export const Layout: React.FC<LayoutProps> = ({ children, phase, onReset, onBack
       </header>
 
       <main className="w-full max-w-4xl px-6 pb-32">
-        <nav className="mb-12 flex justify-center items-center border-b-2 border-dashed border-blueprint/10 dark:border-blueprint/5 pb-8">
-            <div className="flex gap-12 sm:gap-20">
+        <nav className="mb-12 flex justify-center items-center border-b-2 border-dashed border-blueprint/10 dark:border-blueprint/5 pb-8 overflow-x-auto">
+            <div className="flex gap-8 sm:gap-16 whitespace-nowrap px-4">
                 <StepIndicator active={phase === AppPhase.INPUT} label="Vault Entry" step={1} completed={phase !== AppPhase.INPUT} onClick={onReset} />
-                <StepIndicator active={phase === AppPhase.STRATEGIES} label="Architecture" step={2} completed={phase === AppPhase.RESULT || phase === AppPhase.ICON_LAB} />
-                <StepIndicator active={phase === AppPhase.RESULT} label="Artifact" step={3} completed={phase === AppPhase.ICON_LAB} />
-                <StepIndicator active={phase === AppPhase.ICON_LAB} label="Branding" step={4} completed={false} onClick={onIconLab} />
+                <StepIndicator active={phase === AppPhase.STRATEGIES} label="Architecture" step={2} completed={[AppPhase.AUDIT, AppPhase.RESULT, AppPhase.ICON_LAB].includes(phase)} />
+                <StepIndicator active={phase === AppPhase.AUDIT} label="Self-Audit" step={3} completed={[AppPhase.RESULT, AppPhase.ICON_LAB].includes(phase)} />
+                <StepIndicator active={phase === AppPhase.RESULT} label="Artifact" step={4} completed={phase === AppPhase.ICON_LAB} />
+                <StepIndicator active={phase === AppPhase.ICON_LAB} label="Branding" step={5} completed={false} onClick={onIconLab} />
             </div>
         </nav>
         {children}
       </main>
 
       <footer className="mt-auto py-8 text-blueprint/40 dark:text-accent/30 text-[10px] font-sketch text-center w-full uppercase tracking-[0.4em] font-black border-t-2 border-dashed border-blueprint/5">
-        &copy; 2025 Sovereign Archive &bull; High-Fidelity Hand-Drawn Construction
+        &copy; 2025 Prompt Architect &bull; Sovereign Artifact v1.0.0 &bull; Zero-Failure Protocol Enabled
       </footer>
     </div>
   );

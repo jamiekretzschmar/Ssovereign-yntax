@@ -9,8 +9,10 @@ export interface Strategy {
 export enum AppPhase {
   INPUT = 'INPUT',
   STRATEGIES = 'STRATEGIES',
+  AUDIT = 'AUDIT',
   RESULT = 'RESULT',
-  ICON_LAB = 'ICON_LAB'
+  ICON_LAB = 'ICON_LAB',
+  TUTORIAL = 'TUTORIAL'
 }
 
 export interface SavedBlueprintMetadata {

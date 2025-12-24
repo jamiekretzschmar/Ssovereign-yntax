@@ -3,16 +3,15 @@ import { GoogleGenAI, Type } from "@google/genai";
 import { Strategy } from "../types";
 
 /**
- * Sovereign Syntax Engine Configuration
- * Using Gemini 3 Pro for complex reasoning and architectural drafting.
- * Using Gemini 3 Pro Image for high-fidelity visual branding synthesis.
+ * The Prompt Architect: Sovereign Syntax Engine
+ * Adheres to the Zero-Failure Protocol for absolute code integrity.
  */
 const RESEARCH_MODEL = "gemini-3-pro-preview";
 const IMAGE_MODEL = "gemini-3-pro-image-preview";
 
 export const geminiService = {
   /**
-   * Drafts 10 architectural prompting strategies based on the user's task.
+   * Drafts architectural prompting strategies using the Zero-Failure Protocol.
    */
   async draftStrategies(task: string): Promise<Strategy[]> {
     const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
@@ -20,8 +19,9 @@ export const geminiService = {
     try {
       const response = await ai.models.generateContent({
         model: RESEARCH_MODEL,
-        contents: `Draft 10 architectural prompting strategies for: "${task}".
-        Group each by category: 'Logic', 'Narrative', 'Structure', 'Constraint', or 'Persona'.`,
+        contents: `Execute Phase 1: Structural & Static Analysis for the objective: "${task}".
+        Draft 10 architectural prompting strategies grouped by: 'Logic', 'Narrative', 'Structure', 'Constraint', or 'Persona'.
+        Each strategy must serve a specific justification in the final user story.`,
         config: {
           thinkingConfig: { thinkingBudget: 16384 },
           responseMimeType: "application/json",
@@ -31,13 +31,13 @@ export const geminiService = {
               type: Type.OBJECT,
               properties: {
                 name: { type: Type.STRING, description: "Professional name of the strategy" },
-                description: { type: Type.STRING, description: "Detailed implementation guide" },
+                description: { type: Type.STRING, description: "Detailed implementation guide using the Zero-Failure Protocol" },
                 category: { type: Type.STRING, enum: ['Logic', 'Narrative', 'Structure', 'Constraint', 'Persona'] },
               },
               required: ["name", "description", "category"]
             }
           },
-          systemInstruction: "You are the Architect of Intelligence. Refine task objectives into distinct, categorized reasoning strategies."
+          systemInstruction: "You are the Lead Architect and Ruthless QA Engineer. Your objective is absolute code integrity: No failures. No logical dead-ends. Ensure every strategy drafted is robust, clean, and intuitive."
         },
       });
 
@@ -48,12 +48,12 @@ export const geminiService = {
       }));
     } catch (error) {
       console.error("Architectural Drafting Failure:", error);
-      throw new Error("The drafting engine failed to initialize strategies. Please verify network connectivity and API quota.");
+      throw new Error("Research engine connection failure. The Lead Architect is currently unavailable.");
     }
   },
 
   /**
-   * Generates a comprehensive GitHub-ready README artifact.
+   * Generates a high-fidelity README artifact using the Zero-Failure Protocol.
    */
   async generateFinalPrompt(
     task: string, 
@@ -67,33 +67,33 @@ export const geminiService = {
     try {
       const response = await ai.models.generateContent({
         model: RESEARCH_MODEL,
-        contents: `Construct the final high-fidelity GitHub README for the project: "${repoName}".
+        contents: `Construct the final high-fidelity Zero-Failure Artifact for: "${repoName}".
         
-        Contextual Information:
-        - Project Description: ${repoDesc}
-        - Primary Objective: ${task}
-        
-        Mandatory Structure:
-        1. Use professional README.md formatting.
-        2. Create a clear '# High-Fidelity Prompt' section containing the actual finalized instruction.
-        3. Create an '## Architectural Breakdown' section explaining these applied strategies:
+        Objective: ${task}
+        Context: ${repoDesc}
+        Applied Strategies:
         ${strategiesStr}
-        4. Include a '## Operational Parameters' section for execution guidance.`,
+        
+        Requirements:
+        - Strict Markdown formatting.
+        - High-fidelity # High-Fidelity Prompt section.
+        - Detailed Architectural Breakdown.
+        - Operational Parameters for cross-environment execution.`,
         config: {
           thinkingConfig: { thinkingBudget: 32768 },
-          systemInstruction: "You are the Lead Architect. Output only the README content. Demarcate the Prompt in a prominent code block. Avoid conversational filler."
+          systemInstruction: "You are the Lead Architect. Synthesize the artifact following the Zero-Failure Protocol. Ensure the final prompt is robust, covers edge cases, and provides absolute code integrity."
         }
       });
 
       return response.text || "";
     } catch (error) {
       console.error("Artifact Synthesis Failure:", error);
-      throw new Error("Artifact synthesis was interrupted. Ensure the selected strategies do not exceed logical complexity limits.");
+      throw new Error("Synthesis protocol interrupted. Logic density exceeded safe parameters.");
     }
   },
 
   /**
-   * Generates a custom visual identity/icon for the prompt task.
+   * Generates a custom visual identity/icon.
    */
   async generateAppIcon(prompt: string): Promise<string> {
     const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
@@ -112,19 +112,16 @@ export const geminiService = {
         },
       });
 
-      const candidates = response.candidates || [];
-      for (const candidate of candidates) {
-        const parts = candidate.content?.parts || [];
-        for (const part of parts) {
-          if (part.inlineData) {
-            return `data:image/png;base64,${part.inlineData.data}`;
-          }
+      const parts = response.candidates?.[0]?.content?.parts || [];
+      for (const part of parts) {
+        if (part.inlineData) {
+          return `data:image/png;base64,${part.inlineData.data}`;
         }
       }
-      throw new Error("No visual payload received. Image generation may have been filtered.");
+      throw new Error("No visual payload received.");
     } catch (error) {
       console.error("Visual Materialization Failure:", error);
-      throw error; // Let caller handle re-selection of API Key if needed
+      throw error;
     }
   }
 };
