@@ -1,0 +1,113 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sovereign Syntax</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Architects+Daughter&family=Inter:wght@300;400;500;600;700&family=Libre+Baskerville:wght@400;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <script>
+        (function() {
+            try {
+                const theme = localStorage.getItem('pa_settings_theme') || 'light';
+                if (theme === 'dark') {
+                    document.documentElement.classList.add('dark');
+                }
+            } catch (e) {}
+        })();
+    </script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        parchment: '#fdfcf0',
+                        forest: '#0a161a',
+                        blueprint: '#314d61',
+                        accent: '#8fc0ce',
+                        moss: '#1b333a',
+                        onyx: '#050a0c'
+                    },
+                    fontFamily: {
+                        serif: ['Libre Baskerville', 'serif'],
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                        sketch: ['Architects Daughter', 'cursive'],
+                    },
+                    animation: {
+                        'shimmer': 'shimmer 3s infinite linear',
+                        'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                    },
+                    keyframes: {
+                        shimmer: {
+                            '0%': { backgroundPosition: '-200% 0' },
+                            '100%': { backgroundPosition: '200% 0' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .dark body {
+            background-color: #050a0c;
+            color: #fdfcf0;
+        }
+        body {
+            background-color: #fdfcf0;
+            color: #0a161a;
+            font-family: 'Inter', sans-serif;
+            transition: background-color 0.5s ease;
+        }
+
+        .sketch-border {
+            border: 2.5px solid #314d61;
+            border-radius: 255px 15px 225px 15px / 15px 225px 15px 255px;
+        }
+        .dark .sketch-border {
+            border-color: rgba(143, 192, 206, 0.6);
+        }
+
+        .sketch-shadow {
+            box-shadow: 6px 6px 0px 0px rgba(49, 77, 97, 0.1);
+        }
+
+        .foil-text {
+            background: linear-gradient(90deg, #314d61 0%, #8fc0ce 25%, #314d61 50%, #8fc0ce 75%, #314d61 100%);
+            background-size: 200% auto;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: shimmer 4s infinite linear;
+        }
+
+        .markdown-content h1 { font-family: 'Libre Baskerville', serif; font-size: 1.875rem; font-weight: 700; margin-top: 2rem; margin-bottom: 1rem; color: #314d61; border-bottom: 2px solid rgba(49, 77, 97, 0.1); padding-bottom: 0.5rem; }
+        .markdown-content h2 { font-family: 'Libre Baskerville', serif; font-size: 1.5rem; font-weight: 700; margin-top: 1.5rem; margin-bottom: 0.75rem; color: #314d61; }
+        .markdown-content h3 { font-size: 1.125rem; font-weight: 700; margin-top: 1.25rem; margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 0.05em; color: #8fc0ce; }
+        .markdown-content p { margin-bottom: 1rem; line-height: 1.75; }
+        .markdown-content ul { list-style-type: disc; padding-left: 1.5rem; margin-bottom: 1rem; }
+        .markdown-content li { margin-bottom: 0.5rem; }
+        .markdown-content code { font-family: 'JetBrains Mono', monospace; background-color: rgba(49, 77, 97, 0.1); padding: 0.2rem 0.4rem; border-radius: 0.25rem; font-size: 0.875rem; }
+        
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #314d61; border-radius: 3px; }
+    </style>
+<script type="importmap">
+{
+  "imports": {
+    "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
+    "@google/genai": "https://esm.sh/@google/genai@^1.34.0",
+    "react/": "https://esm.sh/react@^19.2.3/",
+    "react": "https://esm.sh/react@^19.2.3"
+  }
+}
+</script>
+</head>
+<body>
+    <div id="root"></div>
+</body>
+</html>

@@ -1,0 +1,7 @@
+{
+  "name": "Sovereign Syntax",
+  "description": "Architectural prompt engineering engine with Sovereign Vault persistence.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}
