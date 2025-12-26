@@ -1,17 +1,17 @@
 
 import React, { useState, useEffect } from 'react';
-import { geminiService } from './services/geminiService';
-import { storageService } from './services/storageService';
-import { AppState, AppPhase, SavedBlueprint, ToastMessage, Attachment } from './types';
-import { InputPhase } from './components/InputPhase';
-import { StrategyPhase } from './components/StrategyPhase';
-import { ResultPhase } from './components/ResultPhase';
-import { AuditPhase } from './components/AuditPhase';
-import { TutorialPhase } from './components/TutorialPhase';
-import { DeploymentPhase } from './components/DeploymentPhase';
-import { IconLab } from './components/IconLab';
-import { Layout } from './components/Layout';
-import { Toast } from './components/Toast';
+import { geminiService } from './services/geminiService.tsx';
+import { storageService } from './services/storageService.tsx';
+import { AppState, AppPhase, SavedBlueprint, ToastMessage, Attachment } from './types.ts';
+import { InputPhase } from './components/InputPhase.tsx';
+import { StrategyPhase } from './components/StrategyPhase.tsx';
+import { ResultPhase } from './components/ResultPhase.tsx';
+import { AuditPhase } from './components/AuditPhase.tsx';
+import { TutorialPhase } from './components/TutorialPhase.tsx';
+import { DeploymentPhase } from './components/DeploymentPhase.tsx';
+import { IconLab } from './components/IconLab.tsx';
+import { Layout } from './components/Layout.tsx';
+import { Toast } from './components/Toast.tsx';
 
 const App: React.FC = () => {
   const [state, setState] = useState<AppState & { currentBlueprintId?: string, customName?: string }>({
@@ -41,11 +41,16 @@ const App: React.FC = () => {
   };
 
   useEffect(() => storageService.setTheme(state.theme), [state.theme]);
+  
   useEffect(() => {
     const checkKey = async () => {
-      if (window.aistudio) {
-        const hasKey = await window.aistudio.hasSelectedApiKey();
-        setState(prev => ({ ...prev, isKeySelected: hasKey }));
+      try {
+        if (window.aistudio) {
+          const hasKey = await window.aistudio.hasSelectedApiKey();
+          setState(prev => ({ ...prev, isKeySelected: hasKey }));
+        }
+      } catch (e) {
+        console.warn("AI Studio key check failed", e);
       }
     };
     checkKey();
@@ -53,46 +58,51 @@ const App: React.FC = () => {
 
   const handleManageKey = async () => {
     if (window.aistudio) {
-      await window.aistudio.openSelectKey();
-      setState(prev => ({ ...prev, isKeySelected: true }));
-      addToast("Vault Keys Active", "success");
+      try {
+        await window.aistudio.openSelectKey();
+        setState(prev => ({ ...prev, isKeySelected: true }));
+        addToast("Vault Keys Active", "success");
+      } catch (e) {
+        addToast("Vault Access Denied", "error");
+      }
     }
   };
 
   const handleStartDrafting = async (task: string, repoName: string, repoDesc: string, attachments: Attachment[]) => {
-    setState(prev => ({ ...prev, isLoading: true, task, repositoryName: repoName, repositoryDescription: repoDesc, attachments }));
+    setState(prev => ({ ...prev, isLoading: true, task, repositoryName: repoName, repositoryDescription: repoDesc, attachments, error: null }));
     try {
       const strategies = await geminiService.draftStrategies(task, attachments);
       setState(prev => ({ ...prev, strategies, phase: AppPhase.STRATEGIES, isLoading: false }));
       addToast("Architecture Drafted", "success");
-    } catch (err) {
-      setState(prev => ({ ...prev, error: "Research failed.", isLoading: false }));
+    } catch (err: any) {
+      setState(prev => ({ ...prev, error: err.message || "Research failed.", isLoading: false }));
       addToast("Drafting Failed", "error");
     }
   };
 
   const handleGeneratePrompt = async () => {
-    setState(prev => ({ ...prev, isLoading: true }));
+    setState(prev => ({ ...prev, isLoading: true, error: null }));
     const selected = state.strategies.filter(s => state.selectedStrategyIds.includes(s.id));
     try {
       const { prompt, trace } = await geminiService.generateFinalPrompt(state.task, selected, state.repositoryName, state.repositoryDescription);
       const updated = storageService.saveBlueprint(state.task, state.strategies, state.selectedStrategyIds, state.customName, state.repositoryName, state.repositoryDescription, state.attachments, trace);
       setState(prev => ({ ...prev, finalPrompt: prompt, thoughtTrace: trace, phase: AppPhase.RESULT, isLoading: false, blueprints: updated }));
       addToast("Artifact Synthesized", "success");
-    } catch (err) {
-      setState(prev => ({ ...prev, isLoading: false }));
+    } catch (err: any) {
+      setState(prev => ({ ...prev, isLoading: false, error: err.message || "Synthesis failed." }));
       addToast("Synthesis Failed", "error");
     }
   };
 
   const handleDeploy = async () => {
-    setState(prev => ({ ...prev, isLoading: true }));
+    setState(prev => ({ ...prev, isLoading: true, error: null }));
     try {
       const code = await geminiService.generateDeploymentCode(state.task, state.finalPrompt, state.repositoryName);
       setState(prev => ({ ...prev, deploymentCode: code, phase: AppPhase.DEPLOY, isLoading: false }));
       addToast("Code Ready", "success");
-    } catch (err) {
-      setState(prev => ({ ...prev, isLoading: false }));
+    } catch (err: any) {
+      setState(prev => ({ ...prev, isLoading: false, error: err.message || "Deployment failed." }));
+      addToast("Deployment Failed", "error");
     }
   };
 
@@ -105,7 +115,7 @@ const App: React.FC = () => {
   return (
     <Layout 
       phase={state.phase} 
-      onReset={() => setState(s => ({ ...s, phase: AppPhase.INPUT, task: '', strategies: [], selectedStrategyIds: [], attachments: [], finalPrompt: '', thoughtTrace: '', deploymentCode: '' }))}
+      onReset={() => setState(s => ({ ...s, phase: AppPhase.INPUT, task: '', strategies: [], selectedStrategyIds: [], attachments: [], finalPrompt: '', thoughtTrace: '', deploymentCode: '', error: null }))}
       onBack={() => {
         if (state.phase === AppPhase.RESULT) setState(p => ({ ...p, phase: AppPhase.AUDIT }));
         else if (state.phase === AppPhase.DEPLOY) setState(p => ({ ...p, phase: AppPhase.RESULT }));
@@ -119,10 +129,16 @@ const App: React.FC = () => {
       onIconLab={() => setState(s => ({ ...s, phase: AppPhase.ICON_LAB }))}
       onTutorial={() => setState(s => ({ ...s, phase: AppPhase.TUTORIAL }))}
     >
+      {state.error && (
+        <div className="mb-8 p-4 bg-red-500/10 border border-red-500/20 text-red-500 rounded-xl text-xs font-mono animate-in fade-in slide-in-from-top-2">
+          [ERROR] {state.error}
+        </div>
+      )}
+
       {state.phase === AppPhase.INPUT && (
         <InputPhase 
           onDraft={handleStartDrafting} 
-          onLoadBlueprint={(bp) => setState(p => ({ ...p, ...bp, phase: AppPhase.STRATEGIES }))}
+          onLoadBlueprint={(bp) => setState(p => ({ ...p, ...bp, phase: AppPhase.STRATEGIES, error: null }))}
           isLoading={state.isLoading} 
           error={state.error}
           blueprints={state.blueprints}

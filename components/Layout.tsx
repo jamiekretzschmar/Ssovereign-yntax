@@ -1,7 +1,7 @@
 
 import React, { useEffect } from 'react';
-import { AppPhase } from '../types';
-import { Logo } from '../constants';
+import { AppPhase } from '../types.ts';
+import { Logo } from '../constants.tsx';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -93,9 +93,9 @@ export const Layout: React.FC<LayoutProps> = ({
         <nav className="mb-12 flex justify-center items-center border-b-2 border-dashed border-blueprint/10 dark:border-blueprint/5 pb-8 overflow-x-auto">
             <div className="flex gap-8 sm:gap-16 whitespace-nowrap px-4">
                 <StepIndicator active={phase === AppPhase.INPUT} label="Vault Entry" step={1} completed={phase !== AppPhase.INPUT} onClick={onReset} />
-                <StepIndicator active={phase === AppPhase.STRATEGIES} label="Architecture" step={2} completed={[AppPhase.AUDIT, AppPhase.RESULT, AppPhase.ICON_LAB].includes(phase)} />
-                <StepIndicator active={phase === AppPhase.AUDIT} label="Self-Audit" step={3} completed={[AppPhase.RESULT, AppPhase.ICON_LAB].includes(phase)} />
-                <StepIndicator active={phase === AppPhase.RESULT} label="Artifact" step={4} completed={phase === AppPhase.ICON_LAB} />
+                <StepIndicator active={phase === AppPhase.STRATEGIES} label="Architecture" step={2} completed={[AppPhase.AUDIT, AppPhase.RESULT, AppPhase.ICON_LAB, AppPhase.DEPLOY].includes(phase)} />
+                <StepIndicator active={phase === AppPhase.AUDIT} label="Self-Audit" step={3} completed={[AppPhase.RESULT, AppPhase.ICON_LAB, AppPhase.DEPLOY].includes(phase)} />
+                <StepIndicator active={phase === AppPhase.RESULT} label="Artifact" step={4} completed={[AppPhase.ICON_LAB, AppPhase.DEPLOY].includes(phase)} />
                 <StepIndicator active={phase === AppPhase.ICON_LAB} label="Branding" step={5} completed={false} onClick={onIconLab} />
             </div>
         </nav>

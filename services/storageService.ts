@@ -1,5 +1,5 @@
 
-import { SavedBlueprint, Strategy, Attachment } from '../types';
+import { SavedBlueprint, Strategy, Attachment } from '../types.ts';
 
 const KEYS = {
   BLUEPRINTS: 'pa_vault_v3_ext',
@@ -111,7 +111,11 @@ export const storageService = {
 
   setTheme: (theme: 'light' | 'dark') => {
     localStorage.setItem(KEYS.THEME, theme);
-    document.documentElement.classList.toggle('dark', theme === 'dark');
+    if (theme === 'dark') {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
   },
 
   getTheme: (): 'light' | 'dark' => (localStorage.getItem(KEYS.THEME) as 'light' | 'dark') || 'light'

@@ -1,6 +1,6 @@
 
 import { GoogleGenAI, Type } from "@google/genai";
-import { Strategy, Attachment } from "../types";
+import { Strategy, Attachment } from "../types.ts";
 
 const RESEARCH_MODEL = "gemini-3-pro-preview";
 const IMAGE_MODEL = "gemini-3-pro-image-preview";
@@ -111,7 +111,7 @@ export const geminiService = {
         contents: { parts: [{ text: styledPrompt }] },
         config: { imageConfig: { aspectRatio: "1:1", imageSize: "1K" } },
       });
-      const part = response.candidates[0].content.parts.find(p => p.inlineData);
+      const part = response.candidates?.[0]?.content?.parts.find(p => p.inlineData);
       if (part?.inlineData) return `data:image/png;base64,${part.inlineData.data}`;
       throw new Error("No payload.");
     } catch (error) {
