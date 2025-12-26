@@ -1,6 +1,6 @@
 
-import React, { useState, useMemo, useRef, useEffect } from 'react';
-import { SavedBlueprint, Attachment } from '../types';
+import React, { useState, useMemo, useRef } from 'react';
+import { SavedBlueprint, Attachment } from '../types.ts';
 
 interface InputPhaseProps {
   onDraft: (task: string, repoName: string, repoDesc: string, attachments: Attachment[]) => void;

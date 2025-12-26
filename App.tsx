@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
-import { geminiService } from './services/geminiService.tsx';
-import { storageService } from './services/storageService.tsx';
+import { geminiService } from './services/geminiService.ts';
+import { storageService } from './services/storageService.ts';
 import { AppState, AppPhase, SavedBlueprint, ToastMessage, Attachment } from './types.ts';
 import { InputPhase } from './components/InputPhase.tsx';
 import { StrategyPhase } from './components/StrategyPhase.tsx';
