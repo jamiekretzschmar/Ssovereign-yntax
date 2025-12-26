@@ -2,8 +2,7 @@
 import { SavedBlueprint, Strategy, Attachment } from '../types';
 
 const KEYS = {
-  BLUEPRINTS: 'pa_vault_v3',
-  FEEDBACK: 'pa_feedback_v1',
+  BLUEPRINTS: 'pa_vault_v3_ext',
   THEME: 'pa_settings_theme'
 };
 
@@ -12,109 +11,75 @@ export const storageService = {
     try {
       const saved = localStorage.getItem(KEYS.BLUEPRINTS);
       if (!saved) return [];
-      const parsed = JSON.parse(saved);
-      if (!Array.isArray(parsed)) return [];
-      
-      return parsed.map(bp => ({
-        id: bp.id || Math.random().toString(36).substr(2, 9),
-        task: bp.task || '',
-        repositoryName: bp.repositoryName || '',
-        repositoryDescription: bp.repositoryDescription || '',
-        customName: bp.customName,
-        strategies: bp.strategies || [],
-        selectedStrategyIds: bp.selectedStrategyIds || [],
-        attachments: bp.attachments || [],
-        timestamp: bp.timestamp || new Date().toISOString(),
-        version: typeof bp.version === 'number' ? bp.version : 1,
-        metadata: bp.metadata || {
-          strategyCount: (bp.selectedStrategyIds || []).length,
-          charCount: (bp.task || '').length,
-          attachmentCount: (bp.attachments || []).length
-        }
-      }));
+      return JSON.parse(saved);
     } catch (e) {
-      console.error("Zero-Failure Protocol: Vault retrieval failed.", e);
       return [];
     }
   },
 
   saveBlueprint: (
     task: string, 
-    strategies: Strategy[] = [], 
-    selectedStrategyIds: string[] = [], 
+    strategies: Strategy[], 
+    selectedIds: string[], 
     customName?: string,
-    repositoryName?: string,
-    repositoryDescription?: string,
-    attachments: Attachment[] = []
+    repoName?: string,
+    repoDesc?: string,
+    attachments: Attachment[] = [],
+    thoughtTrace?: string
   ): SavedBlueprint[] => {
     const current = storageService.getBlueprints();
     const existingIndex = current.findIndex(b => b.task === task);
     
     const metadata = {
-      strategyCount: selectedStrategyIds.length,
+      strategyCount: selectedIds.length,
       charCount: task.length,
       attachmentCount: attachments.length
     };
 
     if (existingIndex > -1) {
       const existing = { ...current[existingIndex] };
-      
-      const selectionChanged = JSON.stringify(existing.selectedStrategyIds) !== JSON.stringify(selectedStrategyIds);
-      const attachmentsChanged = (existing.attachments?.length || 0) !== attachments.length;
-      const nameChanged = customName && existing.customName !== customName;
-      
-      if (selectionChanged || nameChanged || attachmentsChanged) {
-        existing.version += 1;
-      }
-
+      existing.version += 1;
       existing.timestamp = new Date().toISOString();
       existing.strategies = strategies;
-      existing.selectedStrategyIds = selectedStrategyIds;
+      existing.selectedStrategyIds = selectedIds;
       existing.attachments = attachments;
       existing.metadata = metadata;
-      existing.repositoryName = repositoryName || existing.repositoryName;
-      existing.repositoryDescription = repositoryDescription || existing.repositoryDescription;
-      
-      if (customName && customName.trim()) {
-        existing.customName = customName.trim();
-      }
-      
+      existing.repositoryName = repoName || existing.repositoryName;
+      existing.thoughtTrace = thoughtTrace || existing.thoughtTrace;
+      if (customName) existing.customName = customName;
       current.splice(existingIndex, 1);
       current.unshift(existing);
     } else {
       current.unshift({
         id: Math.random().toString(36).substr(2, 9),
         task,
-        repositoryName: repositoryName || '',
-        repositoryDescription: repositoryDescription || '',
-        customName: customName?.trim() || undefined,
+        repositoryName: repoName || '',
+        repositoryDescription: repoDesc || '',
+        customName,
         strategies,
-        selectedStrategyIds,
+        selectedStrategyIds: selectedIds,
         attachments,
         timestamp: new Date().toISOString(),
         version: 1,
-        metadata
+        metadata,
+        thoughtTrace
       });
     }
 
-    // Increase limit slightly for small base64 assets, though 50 is safe for metadata
-    const limitedVault = current.slice(0, 30);
-    try {
-      localStorage.setItem(KEYS.BLUEPRINTS, JSON.stringify(limitedVault));
-    } catch (e) {
-      console.warn("Vault quota reached. Purging older artifacts.");
-      localStorage.setItem(KEYS.BLUEPRINTS, JSON.stringify(current.slice(0, 5)));
-    }
-    return limitedVault;
+    const sorted = [...current].sort((a, b) => (b.isPinned ? 1 : 0) - (a.isPinned ? 1 : 0));
+    const limited = sorted.slice(0, 50);
+    localStorage.setItem(KEYS.BLUEPRINTS, JSON.stringify(limited));
+    return limited;
   },
 
-  updateBlueprintName: (id: string, customName: string): SavedBlueprint[] => {
+  togglePin: (id: string): SavedBlueprint[] => {
     const current = storageService.getBlueprints();
-    const index = current.findIndex(b => b.id === id);
-    if (index > -1) {
-      current[index].customName = customName.trim();
-      current[index].timestamp = new Date().toISOString();
-      localStorage.setItem(KEYS.BLUEPRINTS, JSON.stringify(current));
+    const idx = current.findIndex(b => b.id === id);
+    if (idx > -1) {
+      current[idx].isPinned = !current[idx].isPinned;
+      const sorted = [...current].sort((a, b) => (b.isPinned ? 1 : 0) - (a.isPinned ? 1 : 0));
+      localStorage.setItem(KEYS.BLUEPRINTS, JSON.stringify(sorted));
+      return sorted;
     }
     return current;
   },
@@ -125,13 +90,22 @@ export const storageService = {
     return updated;
   },
 
+  updateBlueprintName: (id: string, name: string): SavedBlueprint[] => {
+    const current = storageService.getBlueprints();
+    const idx = current.findIndex(b => b.id === id);
+    if (idx > -1) {
+      current[idx].customName = name;
+      localStorage.setItem(KEYS.BLUEPRINTS, JSON.stringify(current));
+    }
+    return current;
+  },
+
   exportVault: () => {
-    const data = storageService.getBlueprints();
-    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const blob = new Blob([JSON.stringify(storageService.getBlueprints(), null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `sovereign-vault-export-${new Date().toISOString().split('T')[0]}.json`;
+    a.download = `vault-export-${new Date().toISOString().split('T')[0]}.json`;
     a.click();
   },
 
@@ -140,7 +114,5 @@ export const storageService = {
     document.documentElement.classList.toggle('dark', theme === 'dark');
   },
 
-  getTheme: (): 'light' | 'dark' => {
-    return (localStorage.getItem(KEYS.THEME) as 'light' | 'dark') || 'light';
-  }
+  getTheme: (): 'light' | 'dark' => (localStorage.getItem(KEYS.THEME) as 'light' | 'dark') || 'light'
 };

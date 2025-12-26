@@ -9,7 +9,9 @@ interface LayoutProps {
   onReset: () => void;
   onBack?: () => void;
   theme: 'light' | 'dark';
+  isKeySelected: boolean;
   onToggleTheme: () => void;
+  onManageKey: () => void;
   onIconLab: () => void;
   onTutorial: () => void;
 }
@@ -28,7 +30,9 @@ const StepIndicator: React.FC<{ active: boolean; label: string; step: number; co
     </div>
 );
 
-export const Layout: React.FC<LayoutProps> = ({ children, phase, onReset, onBack, theme, onToggleTheme, onIconLab, onTutorial }) => {
+export const Layout: React.FC<LayoutProps> = ({ 
+  children, phase, onReset, onBack, theme, isKeySelected, onToggleTheme, onManageKey, onIconLab, onTutorial 
+}) => {
   useEffect(() => {
     const handleKeydown = (e: KeyboardEvent) => {
       if (e.key === 'Escape' && onBack) onBack();
@@ -48,14 +52,34 @@ export const Layout: React.FC<LayoutProps> = ({ children, phase, onReset, onBack
           </div>
         </div>
 
-        <div className="flex items-center gap-8">
-            <button onClick={onToggleTheme} className="p-3 sketch-border bg-white dark:bg-blueprint/10 text-blueprint dark:text-accent hover:bg-blueprint/5 transition-colors">
-                {theme === 'light' ? (
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" /></svg>
-                ) : (
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707m12.728 0l-.707-.707M6.343 6.343l-.707-.707M12 5a7 7 0 100 14 7 7 0 000-14z" /></svg>
-                )}
-            </button>
+        <div className="flex items-center gap-4 sm:gap-6">
+            <div className="flex items-center gap-2">
+              <button 
+                onClick={onManageKey} 
+                className={`p-3 sketch-border transition-all flex items-center gap-2 ${
+                  isKeySelected 
+                  ? 'bg-blueprint/5 text-blueprint dark:text-teal border-teal/30' 
+                  : 'bg-red-500/10 text-red-500 border-red-500/40 animate-pulse'
+                }`}
+                title={isKeySelected ? "Vault Key Active" : "Key Selection Required"}
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
+                </svg>
+                <span className={`hidden md:block text-[10px] font-sketch font-black uppercase tracking-tighter`}>
+                  {isKeySelected ? "Key Active" : "Set Vault Key"}
+                </span>
+              </button>
+
+              <button onClick={onToggleTheme} className="p-3 sketch-border bg-white dark:bg-blueprint/10 text-blueprint dark:text-accent hover:bg-blueprint/5 transition-colors">
+                  {theme === 'light' ? (
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" /></svg>
+                  ) : (
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707m12.728 0l-.707-.707M6.343 6.343l-.707-.707M12 5a7 7 0 100 14 7 7 0 000-14z" /></svg>
+                  )}
+              </button>
+            </div>
+
             <div className="hidden lg:flex gap-6">
                 <button onClick={onTutorial} className={`text-[11px] font-sketch font-black uppercase tracking-widest transition-all ${phase === AppPhase.TUTORIAL ? 'text-blueprint underline underline-offset-4' : 'text-blueprint/40 hover:text-blueprint'}`}>Guides</button>
                 <button onClick={onIconLab} className={`text-[11px] font-sketch font-black uppercase tracking-widest transition-all ${phase === AppPhase.ICON_LAB ? 'text-blueprint underline underline-offset-4' : 'text-blueprint/40 hover:text-blueprint'}`}>Icon Lab</button>

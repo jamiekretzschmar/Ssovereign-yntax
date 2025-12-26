@@ -1,36 +1,30 @@
 
-# 🏛️ Sovereign Syntax (v3.1)
+# 🏛️ Sovereign Syntax (v4.0)
 
-> **The Lead Architect's Workspace for High-Fidelity Prompt Engineering.**
+> **The Professional Forge for High-Fidelity Prompt Architecture.**
 
-[![Logic](https://img.shields.io/badge/Logic-Sovereign-314d61?style=for-the-badge)](https://github.com/)
-[![Style](https://img.shields.io/badge/Style-Architectural_Sketch-8fc0ce?style=for-the-badge)](https://github.com/)
-[![License](https://img.shields.io/badge/License-MIT-teal?style=for-the-badge)](https://github.com/)
+[![Version](https://img.shields.io/badge/Version-4.0.0-314d61?style=for-the-badge)](https://github.com/)
+[![Logic](https://img.shields.io/badge/Logic-Sovereign-teal?style=for-the-badge)](https://github.com/)
+[![Build](https://img.shields.io/badge/Build-Production_Ready-8fc0ce?style=for-the-badge)](https://github.com/)
 
-**Sovereign Syntax** is a production-grade environment designed to transform vague intentions into robust, architectural LLM instructions. It uses a custom **Tree-of-Thought** intelligence engine to draft strategies across five logical domains.
+**Sovereign Syntax** is a production-grade workspace designed to transform vague objectives into surgically precise AI instructions. It combines logical strategy drafting, multimodal reference analysis, and immediate code deployment.
 
-## ✨ High-Impact Features
+## ✨ High-Fidelity Features
 
-- 🏗️ **Architectural Drafting:** Automated strategy research across Logic, Persona, and Structure.
-- 📓 **Blueprint Vault:** Local-first, versioned persistence for your prompt iterations.
-- 🎨 **Icon Lab:** Real-time visual branding synthesis for your AI applications.
-- ✍️ **Sketch UI:** A unique high-contrast "blueprint" aesthetic for immersive focus.
-- ⌨️ **Power-User Hotkeys:** Instant navigation and commitment workflows.
+- 📌 **Sovereign Vault:** Local-first, versioned persistence with artifact pinning.
+- 🔍 **Architect's Thought Trace:** Visualize the semantic reasoning behind every synthesis.
+- 🏗️ **Immediate Deployment:** Materialize architectural logic into production-ready Streamlit code.
+- 🎨 **Identity Lab:** Synthesize custom visual branding with Blueprint and Wireframe presets.
+- 📂 **Multimodal Lens:** Reference images and technical documents directly in the drafting phase.
+- ⚡ **Zero-Failure Protocol:** Recursive self-analysis ensure logical integrity before export.
 
 ## 🚀 Getting Started
 
-1. **Vault Entry:** Describe your task in the workspace.
-2. **Architecture:** Select the logical strategies that align with your mission.
-3. **Artifact:** Synthesize a complete GitHub-ready README artifact.
-4. **Branding:** Generate a custom visual identity in the Icon Lab.
-
-## 🛠️ Built With
-
-- **React 19** - UI orchestration.
-- **Gemini 3 Pro** - Reasoning & Synthesis.
-- **Tailwind CSS** - Structural styling.
-- **Local Vault** - Throttled data persistence.
+1. **Vault Entry:** Define your project objective and upload reference material.
+2. **Architecture:** Select the design pillars (Logic, Narrative, Constraint) that align with your mission.
+3. **Synthesis:** Forge the Zero-Failure Artifact and inspect the Thought Trace.
+4. **Deployment:** Preview and edit the synthesized Python code before launching.
 
 ## ⚖️ License
 
-Distributed under the MIT License. See `LICENSE` for more information.
+Distributed under the MIT License. Built for architects by architects.

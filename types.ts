@@ -4,6 +4,7 @@ export interface Strategy {
   name: string;
   description: string;
   category: 'Logic' | 'Narrative' | 'Structure' | 'Constraint' | 'Persona';
+  relevance: number; // 0-100
 }
 
 export enum AppPhase {
@@ -11,6 +12,7 @@ export enum AppPhase {
   STRATEGIES = 'STRATEGIES',
   AUDIT = 'AUDIT',
   RESULT = 'RESULT',
+  DEPLOY = 'DEPLOY',
   ICON_LAB = 'ICON_LAB',
   TUTORIAL = 'TUTORIAL'
 }
@@ -26,6 +28,7 @@ export interface SavedBlueprintMetadata {
   strategyCount: number;
   charCount: number;
   attachmentCount: number;
+  buildTimeMs?: number;
 }
 
 export interface SavedBlueprint {
@@ -40,13 +43,8 @@ export interface SavedBlueprint {
   timestamp: string;
   version: number;
   metadata: SavedBlueprintMetadata;
-}
-
-export interface Feedback {
-  task: string;
-  rating: number;
-  comments: string;
-  timestamp: string;
+  isPinned?: boolean;
+  thoughtTrace?: string;
 }
 
 export interface AppState {
@@ -57,12 +55,15 @@ export interface AppState {
   selectedStrategyIds: string[];
   attachments: Attachment[];
   finalPrompt: string;
+  thoughtTrace: string;
+  deploymentCode: string;
   phase: AppPhase;
   isLoading: boolean;
   error: string | null;
   feedbackSubmitted: boolean;
   blueprints: SavedBlueprint[];
   theme: 'light' | 'dark';
+  isKeySelected: boolean;
 }
 
 export type ToastType = 'success' | 'error' | 'info';
