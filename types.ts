@@ -15,9 +15,17 @@ export enum AppPhase {
   TUTORIAL = 'TUTORIAL'
 }
 
+export interface Attachment {
+  name: string;
+  mimeType: string;
+  data: string; // Base64
+  size: number;
+}
+
 export interface SavedBlueprintMetadata {
   strategyCount: number;
   charCount: number;
+  attachmentCount: number;
 }
 
 export interface SavedBlueprint {
@@ -28,6 +36,7 @@ export interface SavedBlueprint {
   customName?: string;
   strategies: Strategy[];
   selectedStrategyIds: string[];
+  attachments: Attachment[];
   timestamp: string;
   version: number;
   metadata: SavedBlueprintMetadata;
@@ -46,6 +55,7 @@ export interface AppState {
   repositoryDescription: string;
   strategies: Strategy[];
   selectedStrategyIds: string[];
+  attachments: Attachment[];
   finalPrompt: string;
   phase: AppPhase;
   isLoading: boolean;

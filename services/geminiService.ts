@@ -1,6 +1,6 @@
 
 import { GoogleGenAI, Type } from "@google/genai";
-import { Strategy } from "../types";
+import { Strategy, Attachment } from "../types";
 
 /**
  * The Prompt Architect: Sovereign Syntax Engine
@@ -12,16 +12,34 @@ const IMAGE_MODEL = "gemini-3-pro-image-preview";
 export const geminiService = {
   /**
    * Drafts architectural prompting strategies using the Zero-Failure Protocol.
+   * Includes analysis of provided reference materials.
    */
-  async draftStrategies(task: string): Promise<Strategy[]> {
+  async draftStrategies(task: string, attachments: Attachment[] = []): Promise<Strategy[]> {
     const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
     
+    // Prepare multi-part content for Gemini 3 Pro
+    const parts: any[] = [
+      { text: `Execute Phase 1: Structural & Multimodal Analysis.
+        Objective: "${task}"
+        Draft 10 architectural prompting strategies grouped by: 'Logic', 'Narrative', 'Structure', 'Constraint', or 'Persona'.
+        If reference materials (images/files) are attached, analyze them for specific technical requirements or UI constraints.
+        Each strategy must serve a specific justification in the final user story.` }
+    ];
+
+    // Add attachments as inline data
+    attachments.forEach(att => {
+      parts.push({
+        inlineData: {
+          mimeType: att.mimeType,
+          data: att.data
+        }
+      });
+    });
+
     try {
       const response = await ai.models.generateContent({
         model: RESEARCH_MODEL,
-        contents: `Execute Phase 1: Structural & Static Analysis for the objective: "${task}".
-        Draft 10 architectural prompting strategies grouped by: 'Logic', 'Narrative', 'Structure', 'Constraint', or 'Persona'.
-        Each strategy must serve a specific justification in the final user story.`,
+        contents: { parts },
         config: {
           thinkingConfig: { thinkingBudget: 16384 },
           responseMimeType: "application/json",
@@ -37,7 +55,7 @@ export const geminiService = {
               required: ["name", "description", "category"]
             }
           },
-          systemInstruction: "You are the Lead Architect and Ruthless QA Engineer. Your objective is absolute code integrity: No failures. No logical dead-ends. Ensure every strategy drafted is robust, clean, and intuitive."
+          systemInstruction: "You are the Lead Architect and Ruthless QA Engineer. Your objective is absolute code integrity. Analyze all provided text and reference materials (images/files) to draft a robust prompt architecture."
         },
       });
 

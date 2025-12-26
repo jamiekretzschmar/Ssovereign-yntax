@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { geminiService } from './services/geminiService';
 import { storageService } from './services/storageService';
-import { AppState, AppPhase, Strategy, SavedBlueprint, ToastMessage } from './types';
+import { AppState, AppPhase, Strategy, SavedBlueprint, ToastMessage, Attachment } from './types';
 import { InputPhase } from './components/InputPhase';
 import { StrategyPhase } from './components/StrategyPhase';
 import { ResultPhase } from './components/ResultPhase';
@@ -19,6 +19,7 @@ const App: React.FC = () => {
     repositoryDescription: '',
     strategies: [],
     selectedStrategyIds: [],
+    attachments: [],
     finalPrompt: '',
     phase: AppPhase.INPUT,
     isLoading: false,
@@ -42,11 +43,19 @@ const App: React.FC = () => {
     storageService.setTheme(state.theme);
   }, [state.theme]);
 
-  const handleStartDrafting = async (task: string, repoName: string, repoDesc: string) => {
-    setState(prev => ({ ...prev, isLoading: true, error: null, task, repositoryName: repoName, repositoryDescription: repoDesc }));
+  const handleStartDrafting = async (task: string, repoName: string, repoDesc: string, attachments: Attachment[]) => {
+    setState(prev => ({ 
+      ...prev, 
+      isLoading: true, 
+      error: null, 
+      task, 
+      repositoryName: repoName, 
+      repositoryDescription: repoDesc,
+      attachments
+    }));
     try {
-      const strategies = await geminiService.draftStrategies(task);
-      const updatedBlueprints = storageService.saveBlueprint(task, strategies, [], state.customName, repoName, repoDesc);
+      const strategies = await geminiService.draftStrategies(task, attachments);
+      const updatedBlueprints = storageService.saveBlueprint(task, strategies, [], state.customName, repoName, repoDesc, attachments);
       setState(prev => ({
         ...prev,
         strategies,
@@ -86,7 +95,8 @@ const App: React.FC = () => {
         state.selectedStrategyIds, 
         state.customName, 
         state.repositoryName, 
-        state.repositoryDescription
+        state.repositoryDescription,
+        state.attachments
       );
       setState(prev => ({ 
         ...prev, 
@@ -110,6 +120,7 @@ const App: React.FC = () => {
       repositoryDescription: bp.repositoryDescription || '',
       strategies: bp.strategies,
       selectedStrategyIds: bp.selectedStrategyIds,
+      attachments: bp.attachments || [],
       customName: bp.customName || '',
       currentBlueprintId: bp.id,
       phase: AppPhase.STRATEGIES
@@ -124,7 +135,8 @@ const App: React.FC = () => {
       ids, 
       name, 
       state.repositoryName, 
-      state.repositoryDescription
+      state.repositoryDescription,
+      state.attachments
     );
     setState(prev => ({ 
       ...prev, 
@@ -152,6 +164,7 @@ const App: React.FC = () => {
       repositoryDescription: '',
       strategies: [],
       selectedStrategyIds: [],
+      attachments: [],
       finalPrompt: '',
       phase: AppPhase.INPUT,
       isLoading: false,

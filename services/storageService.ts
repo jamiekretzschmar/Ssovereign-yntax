@@ -1,5 +1,5 @@
 
-import { SavedBlueprint, Strategy } from '../types';
+import { SavedBlueprint, Strategy, Attachment } from '../types';
 
 const KEYS = {
   BLUEPRINTS: 'pa_vault_v3',
@@ -23,11 +23,13 @@ export const storageService = {
         customName: bp.customName,
         strategies: bp.strategies || [],
         selectedStrategyIds: bp.selectedStrategyIds || [],
+        attachments: bp.attachments || [],
         timestamp: bp.timestamp || new Date().toISOString(),
         version: typeof bp.version === 'number' ? bp.version : 1,
         metadata: bp.metadata || {
           strategyCount: (bp.selectedStrategyIds || []).length,
-          charCount: (bp.task || '').length
+          charCount: (bp.task || '').length,
+          attachmentCount: (bp.attachments || []).length
         }
       }));
     } catch (e) {
@@ -42,29 +44,33 @@ export const storageService = {
     selectedStrategyIds: string[] = [], 
     customName?: string,
     repositoryName?: string,
-    repositoryDescription?: string
+    repositoryDescription?: string,
+    attachments: Attachment[] = []
   ): SavedBlueprint[] => {
     const current = storageService.getBlueprints();
     const existingIndex = current.findIndex(b => b.task === task);
     
     const metadata = {
       strategyCount: selectedStrategyIds.length,
-      charCount: task.length
+      charCount: task.length,
+      attachmentCount: attachments.length
     };
 
     if (existingIndex > -1) {
       const existing = { ...current[existingIndex] };
       
       const selectionChanged = JSON.stringify(existing.selectedStrategyIds) !== JSON.stringify(selectedStrategyIds);
+      const attachmentsChanged = (existing.attachments?.length || 0) !== attachments.length;
       const nameChanged = customName && existing.customName !== customName;
       
-      if (selectionChanged || nameChanged) {
+      if (selectionChanged || nameChanged || attachmentsChanged) {
         existing.version += 1;
       }
 
       existing.timestamp = new Date().toISOString();
       existing.strategies = strategies;
       existing.selectedStrategyIds = selectedStrategyIds;
+      existing.attachments = attachments;
       existing.metadata = metadata;
       existing.repositoryName = repositoryName || existing.repositoryName;
       existing.repositoryDescription = repositoryDescription || existing.repositoryDescription;
@@ -84,14 +90,21 @@ export const storageService = {
         customName: customName?.trim() || undefined,
         strategies,
         selectedStrategyIds,
+        attachments,
         timestamp: new Date().toISOString(),
         version: 1,
         metadata
       });
     }
 
-    const limitedVault = current.slice(0, 50);
-    localStorage.setItem(KEYS.BLUEPRINTS, JSON.stringify(limitedVault));
+    // Increase limit slightly for small base64 assets, though 50 is safe for metadata
+    const limitedVault = current.slice(0, 30);
+    try {
+      localStorage.setItem(KEYS.BLUEPRINTS, JSON.stringify(limitedVault));
+    } catch (e) {
+      console.warn("Vault quota reached. Purging older artifacts.");
+      localStorage.setItem(KEYS.BLUEPRINTS, JSON.stringify(current.slice(0, 5)));
+    }
     return limitedVault;
   },
 

@@ -1,9 +1,9 @@
 
 import React, { useState, useMemo, useRef, useEffect } from 'react';
-import { SavedBlueprint } from '../types';
+import { SavedBlueprint, Attachment } from '../types';
 
 interface InputPhaseProps {
-  onDraft: (task: string, repoName: string, repoDesc: string) => void;
+  onDraft: (task: string, repoName: string, repoDesc: string, attachments: Attachment[]) => void;
   onLoadBlueprint: (blueprint: SavedBlueprint) => void;
   isLoading: boolean;
   error: string | null;
@@ -13,12 +13,99 @@ interface InputPhaseProps {
   onExport: () => void;
 }
 
+const FileVault: React.FC<{ attachments: Attachment[]; setAttachments: React.Dispatch<React.SetStateAction<Attachment[]>> }> = ({ attachments, setAttachments }) => {
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    // Cast to File[] to ensure the compiler knows the items are File objects and avoid 'unknown' type errors.
+    const files = Array.from(e.target.files || []) as File[];
+    for (const file of files) {
+      if (file.size > 4 * 1024 * 1024) {
+        alert("File exceeds 4MB architectural limit.");
+        continue;
+      }
+      
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const base64 = (event.target?.result as string).split(',')[1];
+        setAttachments(prev => [...prev, {
+          name: file.name,
+          mimeType: file.type || 'application/octet-stream',
+          data: base64,
+          size: file.size
+        }]);
+      };
+      // File inherits from Blob, so readAsDataURL is safe once typed as File.
+      reader.readAsDataURL(file);
+    }
+    if (fileInputRef.current) fileInputRef.current.value = '';
+  };
+
+  const removeAttachment = (index: number) => {
+    setAttachments(prev => prev.filter((_, i) => i !== index));
+  };
+
+  return (
+    <div className="space-y-4">
+      <div className="flex justify-between items-center">
+        <label className="text-[11px] font-sketch font-bold text-blueprint uppercase tracking-[0.3em] flex items-center gap-3">
+          <span className="w-6 h-[2px] bg-blueprint opacity-30"></span>
+          Reference Material Vault
+        </label>
+        <span className="text-[10px] font-sketch font-black text-blueprint/30">
+          {attachments.length} / 5 FILES
+        </span>
+      </div>
+
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+        {attachments.map((att, idx) => (
+          <div key={idx} className="relative group sketch-border bg-white dark:bg-blueprint/20 p-2 aspect-square flex flex-col items-center justify-center overflow-hidden">
+            {att.mimeType.startsWith('image/') ? (
+              <img src={`data:${att.mimeType};base64,${att.data}`} className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" alt={att.name} />
+            ) : (
+              <div className="flex flex-col items-center gap-2 p-2">
+                <svg className="w-8 h-8 text-blueprint/40" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+                <span className="text-[8px] font-black uppercase text-blueprint/60 truncate w-full text-center">{att.name}</span>
+              </div>
+            )}
+            <button 
+              onClick={() => removeAttachment(idx)}
+              className="absolute top-1 right-1 p-1 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity scale-75"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12" /></svg>
+            </button>
+          </div>
+        ))}
+        {attachments.length < 5 && (
+          <button 
+            type="button"
+            onClick={() => fileInputRef.current?.click()}
+            className="sketch-border border-dashed border-blueprint/30 bg-white/30 dark:bg-blueprint/10 aspect-square flex flex-col items-center justify-center gap-2 hover:bg-blueprint/5 transition-colors group"
+          >
+            <svg className="w-8 h-8 text-blueprint/20 group-hover:text-blueprint/40 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M12 4v16m8-8H4" /></svg>
+            <span className="text-[9px] font-sketch font-bold text-blueprint/30 uppercase">Add Reference</span>
+          </button>
+        )}
+      </div>
+      <input 
+        ref={fileInputRef}
+        type="file" 
+        multiple 
+        accept="image/*,.pdf,.txt,.json,.js,.py,.md"
+        className="hidden" 
+        onChange={handleFileChange}
+      />
+    </div>
+  );
+};
+
 export const InputPhase: React.FC<InputPhaseProps> = ({ 
   onDraft, onLoadBlueprint, isLoading, error, blueprints, onDeleteBlueprint, onUpdateBlueprintName, onExport 
 }) => {
   const [task, setTask] = useState('');
   const [repoName, setRepoName] = useState('');
   const [repoDesc, setRepoDesc] = useState('');
+  const [attachments, setAttachments] = useState<Attachment[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editValue, setEditValue] = useState('');
@@ -63,12 +150,12 @@ export const InputPhase: React.FC<InputPhaseProps> = ({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (task.trim()) {
-      onDraft(task.trim(), repoName.trim() || "Sovereign Artifact", repoDesc.trim());
+      onDraft(task.trim(), repoName.trim() || "Sovereign Artifact", repoDesc.trim(), attachments);
     }
   };
 
   return (
-    <div className="space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-700">
+    <div className="space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-700 pb-24">
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
         <div className="space-y-3 text-left">
           <h2 className="text-5xl font-sketch font-bold text-blueprint dark:text-parchment tracking-tight">The Sovereign Workspace</h2>
@@ -115,12 +202,14 @@ export const InputPhase: React.FC<InputPhaseProps> = ({
           </div>
           <textarea
             autoFocus
-            className="w-full bg-white dark:bg-blueprint/20 sketch-border p-8 text-xl font-sketch text-forest dark:text-parchment placeholder:text-blueprint/20 focus:border-blueprint outline-none transition-all min-h-[280px] leading-relaxed"
-            placeholder="Describe your vision (e.g., 'A Python script to automate cloud-native deployments with terraform integration')..."
+            className="w-full bg-white dark:bg-blueprint/20 sketch-border p-8 text-xl font-sketch text-forest dark:text-parchment placeholder:text-blueprint/20 focus:border-blueprint outline-none transition-all min-h-[200px] leading-relaxed"
+            placeholder="Describe your vision (e.g., 'A Python script to automate cloud-native deployments')..."
             value={task}
             onChange={(e) => setTask(e.target.value.slice(0, MAX_CHARS + 100))}
           />
         </div>
+
+        <FileVault attachments={attachments} setAttachments={setAttachments} />
 
         <button
           disabled={isLoading || !task.trim() || task.length > MAX_CHARS}
@@ -209,6 +298,15 @@ export const InputPhase: React.FC<InputPhaseProps> = ({
                       <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" /></svg>
                       <span className="font-black text-blueprint/70">{bp.metadata.strategyCount} STRAT</span>
                     </div>
+                    {bp.metadata.attachmentCount > 0 && (
+                      <>
+                        <div className="w-1 h-1 bg-blueprint/10 rounded-full"></div>
+                        <div className="flex items-center gap-1.5">
+                          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.414a4 4 0 00-5.656-5.656l-6.415 6.414a6 6 0 108.486 8.486L20.5 13" /></svg>
+                          <span className="font-black text-blueprint/70">{bp.metadata.attachmentCount} REF</span>
+                        </div>
+                      </>
+                    )}
                     <div className="w-1 h-1 bg-blueprint/10 rounded-full"></div>
                     <span className="font-black px-2 py-0.5 bg-blueprint/5 text-blueprint/60 sketch-border border-[1px]">REV_{bp.version.toString().padStart(2, '0')}</span>
                   </div>
