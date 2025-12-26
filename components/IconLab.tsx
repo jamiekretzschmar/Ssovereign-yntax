@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { geminiService } from '../services/geminiService.ts';
+import { geminiService } from '../services/geminiService';
 
 export const IconLab: React.FC = () => {
   const [iconUrl, setIconUrl] = useState<string | null>(null);

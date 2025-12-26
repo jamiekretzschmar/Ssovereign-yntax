@@ -1,6 +1,6 @@
 
-import React, { useState } from 'react';
-import { Strategy } from '../types.ts';
+import React, { useState, useEffect } from 'react';
+import { Strategy } from '../types';
 
 interface StrategyPhaseProps {
   strategies: Strategy[];
